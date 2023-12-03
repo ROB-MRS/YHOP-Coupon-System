@@ -9,25 +9,25 @@ class [[eosio::contract("system_contract")]] system_contract : public eosio::con
 
 		using contract::contract;
 
-		/* COSTRUTTORE DEL CONTRATTO */
+		/* SMART CONTRACT CONSTRUCTOR */
 		system_contract(name receiver, name code, datastream<const char*> ds): contract(receiver, code, ds) {}
 
-		/* IMPLEMENTAZIONI DELLE ACTION */
+		/* ACTION'S IMPLEMENTATION */
 
-		/* INSERIMENTO COUPON */
+		/* COUPON INSERTION METHOD */
 		[[eosio::action]]
 		void addcoupon(int coupon_id, std::string pub_id, std::string beerlover_id, int value, std::string exp_date)
 		{
 			coupon_index coupons(get_self(), get_first_receiver().value);
 
-			// verifica dell'esistenza del coupon nella tabella
+			// verify the existence of the coupon in the table
 			auto c_itr = coupons.find(coupon_id);
 			check( c_itr == coupons.end() ,"Coupon gia' presente nel sistema!");
 
-			// verifica della correttezza del campo value del coupon
-			check( (value<100 && value>0) , "Il valore del Coupon e' inammissibile!" );
+			// verify if the 'value' fild is correct
+			check( (value<100 && value>0) , "Coupon value out of bound!" );
 
-				// inserimento del record nella tebella
+				// insertion of the record in the table
 				coupons.emplace(_self, [&](auto& row) {
 					row.coupon_id = coupon_id;
 					row.pub_id = pub_id;
@@ -39,58 +39,58 @@ class [[eosio::contract("system_contract")]] system_contract : public eosio::con
 		}
 
 
-		/* INSERIMENTO REWARD */
+		/* REWARD INSERTION METHOD */
 		[[eosio::action]]
 		void addreward(int reward_id, std::string hash)
 		{
 			reward_index rewards(get_self(), get_first_receiver().value);
 
-			// verifica dell'esistenza del reward nella tabella
+			// verify the existence of the coupon in the table
 			auto r_itr = rewards.find(reward_id);
-			check( r_itr == rewards.end() ,"Il Reward di questo Coupon e' gia' presente nel sistema!");
+			check( r_itr == rewards.end() ,"The reward for this coupon already exists!");
 
-			// inserimento del record all'interno della tabella
+			// insertion of the record in the table
 			rewards.emplace(_self, [&](auto& row){
 				row.reward_id = reward_id;
 				row.hash = hash;
 			});
 		}
 
-		/* CANCELLAZIONE COUPON */
+		/* COUPON DELETION METHOD */
 		[[eosio::action]]
 		void erasecoupon(int coupon_id)
 		{
 			coupon_index coupons(get_self(), get_first_receiver().value);
 			
-			// ricerca del record tramite l'id
+			// search the coupon in the table through the 'id'
 			auto c_itr = coupons.find(coupon_id);
 
-			// il record non esiste
-			check( c_itr != coupons.end() ,"Il Coupon non esiste!");
+			// if the record doesn't exist
+			check( c_itr != coupons.end() ,"This coupon doesn't exist!");
 
-			// eliminazione del record
+			// remove the coupon
 			coupons.erase(c_itr);
 		}
 
-		/* CANCELLAZIONE REWARD */
+		/* REWARD DELETION METHOD */
 		[[eosio::action]]
 		void erasereward(int reward_id)
 		{
 			reward_index rewards(get_self(), get_first_receiver().value);
 			
-			// ricerca del record tramite l'id
+			// search the coupon in the table through the 'id'
 			auto r_itr = rewards.find(reward_id);
 
-			// il record non esiste
+			// if the record doesn't exist
 			check( r_itr != rewards.end() ,"Il Coupon non esiste!");
 
-			// eliminazione del record
+			// deletino of the reward
 			rewards.erase(r_itr);
 		}
 
 	private:
 
-		/* STRUTTURA DEL COUPON */
+		/* COUPON STRUCT */
 		struct [[eosio::table]] coupon {
 			int coupon_id;
 			std::string pub_id;
@@ -101,11 +101,11 @@ class [[eosio::contract("system_contract")]] system_contract : public eosio::con
 			int primary_key() const{ return coupon_id;}
 		};
 
-		// tabella dei coupons
+		// coupons table
 		using coupon_index = eosio::multi_index<"coupons"_n, coupon>;
 
 
-		/* STRUTTURA DEL REWARD */
+		/* REWARD STRUCT */
 		struct [[eosio::table]] reward {
 			int reward_id;
 			std::string hash;
@@ -113,7 +113,7 @@ class [[eosio::contract("system_contract")]] system_contract : public eosio::con
 			int primary_key() const{ return reward_id;}
 		};
 
-		// tabella dei rewards
+		// rewards table
 		using reward_index = eosio::multi_index<"rewards"_n, reward>;
 
 };
